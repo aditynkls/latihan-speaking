@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f7a5a">
+<title>Latihan Speaking Adits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: tab Panggilan (layar call + transkrip samping / bottom-sheet di HP), Latihan cepat, Riwayat */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#1c2420; --muted:#5d6b64; --line:#d9e0db;
+  --accent:#1f7a5a; --accent-ink:#ffffff; --accent-soft:#e1f1ea;
+  --err:#c2412d; --err-soft:#fbe7e2; --warn:#b7791f; --warn-soft:#fbf0dc; --ok:#1f7a5a;
+  --rec:#d23a3a; --stage:#15201b; --stage-ink:#eef4f0; --stage-muted:#a8bab1;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121815; --surface:#1a221e; --ink:#e6ece8; --muted:#9aaaa2; --line:#2c3732;
+    --accent:#4cc196; --accent-ink:#0d1a14; --accent-soft:#1d3329;
+    --err:#ff8a73; --err-soft:#3a201b; --warn:#f0b357; --warn-soft:#3a2e18; --ok:#4cc196;
+    --rec:#ff6161; --stage:#0c120f; --stage-ink:#eef4f0; --stage-muted:#94a79d; color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);padding:20px max(16px,env(safe-area-inset-right)) 48px max(16px,env(safe-area-inset-left))}
+.shell{max-width:1180px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-bottom:18px}
+h1{font:700 clamp(26px,4vw,36px)/1.05 var(--f-display);margin:0;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+h2{font:600 19px/1.2 var(--f-display);margin:0 0 12px}
+h3{font:600 16px/1.2 var(--f-display);margin:0 0 8px}
+.label{font:500 12px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0}
+.stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:600 15px var(--f-body);border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,.choice:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.danger{background:var(--rec);border-color:var(--rec);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+kbd{font:500 11px var(--f-mono);border:1px solid currentColor;border-radius:4px;padding:1px 5px;opacity:.75}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{border:0;padding:8px 14px;font-size:14px;border-radius:8px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.iconbtn{padding:9px}
+.alert{border:1px solid var(--warn);background:var(--warn-soft);border-radius:10px;padding:10px 12px;font-size:14px}
+.empty{color:var(--muted);font-size:14px}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+
+/* ---------- Pre-call ---------- */
+.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.choices{grid-template-columns:minmax(0,1fr)}}
+.choice{position:relative;border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:4px;background:var(--surface)}
+.choice input{position:absolute;opacity:0;pointer-events:none}
+.choice:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.choice b{font:600 16px var(--f-display)}
+.choice span{font-size:14px;color:var(--muted)}
+.opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+@media (max-width:760px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:14px;font-weight:600}
+.field input,.field select,.field textarea{font:15px var(--f-body);padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.field small{color:var(--muted);font-size:13px}
+.startbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
+.startbar .primary{padding:14px 22px;font-size:16px}
+
+/* ---------- In-call ---------- */
+.callgrid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:stretch}
+@media (max-width:900px){.callgrid{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--stage);color:var(--stage-ink);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:18px;min-height:540px;min-width:0}
+@media (max-width:900px){.stage{min-height:calc(100dvh - 140px)}}
+.stagehead{display:flex;justify-content:space-between;align-items:center;gap:10px;font:500 14px var(--f-mono);color:var(--stage-muted)}
+.stagehead .live{display:inline-flex;align-items:center;gap:6px}
+.stagehead .live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--rec)}
+.who{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:8px}
+.avatar{width:128px;height:128px;border-radius:50%;display:grid;place-items:center;font:700 40px var(--f-display);background:linear-gradient(145deg,#2f8f6c,#1a5a44);color:#fff;position:relative}
+.avatar::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:3px solid transparent;transition:border-color .2s}
+.stage[data-state="speaking"] .avatar::after{border-color:#4cc196;animation:ring 1.2s ease-in-out infinite}
+.stage[data-state="thinking"] .avatar{animation:breathe 1.6s ease-in-out infinite}
+@keyframes ring{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.07);opacity:.6}}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.6}}
+.who .name{font:600 20px var(--f-display)}
+.who .role{font-size:14px;color:var(--stage-muted);text-align:center}
+.statechip{align-self:center;font:500 13px var(--f-mono);padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.08);text-align:center}
+.stage[data-state="listening"] .statechip{background:var(--rec);color:#fff}
+.subs{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;min-height:120px}
+.sub-ai{font:500 clamp(18px,2.4vw,23px)/1.4 var(--f-body);text-align:center;text-wrap:balance}
+.sub-me{font-size:16px;text-align:center;color:var(--stage-muted);font-style:italic;min-height:1.4em}
+.silence{height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+.silence i{display:block;height:100%;width:0;background:var(--rec);transition:width .1s linear}
+.hintbox{background:rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;font-size:15px}
+.hintbox ul{margin:6px 0 0;padding-left:18px}
+.ctrls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.ctrls{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ctrls button{flex-direction:column;gap:4px;background:rgba(255,255,255,.08);border-color:transparent;color:var(--stage-ink);font-size:13px;padding:10px 6px;min-height:64px}
+.ctrls button:hover{border-color:rgba(255,255,255,.3)}
+.ctrls button.danger{background:var(--rec)}
+.ctrls svg{width:22px;height:22px}
+.ctrls kbd{display:inline}
+@media (hover:none){.ctrls kbd{display:none}}
+.ctrls .mobile-only{display:none}
+@media (max-width:900px){.ctrls .mobile-only{display:flex}}
+
+.transcript{display:flex;flex-direction:column;min-height:0;max-height:640px}
+.transcript .tlist{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+.bub{max-width:88%;padding:9px 12px;border-radius:12px;font-size:15px;line-height:1.45}
+.bub.ai{align-self:flex-start;background:var(--bg);border:1px solid var(--line)}
+.bub.me{align-self:flex-end;background:var(--accent-soft)}
+.bub .fix{margin-top:6px;font-size:13px;border-top:1px dashed var(--line);padding-top:6px}
+.fix del{color:var(--err)} .fix ins{color:var(--ok);text-decoration:none;font-weight:600}
+.fix small{display:block;color:var(--muted)}
+@media (max-width:900px){
+  .transcript{position:fixed;left:0;right:0;bottom:0;z-index:20;max-height:72dvh;border-radius:18px 18px 0 0;transform:translateY(105%);transition:transform .25s;box-shadow:0 -10px 30px rgba(0,0,0,.25);padding-bottom:max(20px,env(safe-area-inset-bottom))}
+  .transcript.open{transform:none}
+}
+.sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sheethead button{display:none}
+@media (max-width:900px){.sheethead button{display:inline-flex}}
+
+/* ---------- Report ---------- */
+.scores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.scores{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font:600 24px var(--f-mono);font-variant-numeric:tabular-nums}
+.stat small{color:var(--muted);font-size:12px}
+.fixlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.fixlist li{border:1px solid var(--line);border-left:4px solid var(--err);border-radius:8px;padding:10px 12px}
+.fixlist li.style{border-left-color:var(--warn)}
+.fixlist .chg{font:500 15px/1.5 var(--f-body)}
+.fixlist del{color:var(--err)} .fixlist ins{color:var(--ok);text-decoration:none;font-weight:600}
+.fixlist p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.better{background:var(--accent-soft);border-radius:10px;padding:14px}
+.better p{margin:6px 0 10px}
+.phrases{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.phrases li{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:8px}
+.phrases small{color:var(--muted)}
+.twocol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.twocol{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- Quick practice ---------- */
+.q{font:500 clamp(20px,2.6vw,26px)/1.3 var(--f-display);margin:14px 0 6px;text-wrap:balance}
+.qhint{color:var(--muted);font-size:14px;margin:0 0 14px}
+.recbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+.mic{width:72px;height:72px;border-radius:50%;background:var(--rec);border-color:var(--rec);color:#fff;padding:0;flex:none}
+.mic svg{width:30px;height:30px}
+.mic.on{animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--rec) 50%,transparent)}70%{box-shadow:0 0 0 16px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.timer{font:500 28px var(--f-mono);font-variant-numeric:tabular-nums}
+.status{color:var(--muted);font-size:14px}
+textarea.ans{width:100%;min-height:130px;resize:vertical;font:16px/1.6 var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
+.interim{color:var(--muted);font-style:italic;min-height:1.5em;margin:8px 0 0}
+.marked{background:var(--bg);border-radius:10px;padding:14px;line-height:1.9}
+mark{background:var(--err-soft);color:inherit;border-bottom:2px solid var(--err);padding:0 2px;border-radius:2px;cursor:help}
+mark.style{background:var(--warn-soft);border-color:var(--warn)}
+.subtabs{display:flex;flex-wrap:wrap;gap:6px}
+.subtabs button{padding:8px 12px;font-size:14px}
+.subtabs button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+
+/* ---------- History ---------- */
+.hist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.hist li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.hist .tag{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:3px 7px;border-radius:6px;background:var(--accent-soft)}
+.hist .tag.quick{background:var(--warn-soft)}
+.hist .m{color:var(--muted);font-size:12px}
+.hist .n{font-family:var(--f-mono);text-align:right;white-space:nowrap}
+.freq{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.freq li{display:flex;justify-content:space-between;gap:8px}
+.freq b{font-family:var(--f-mono)}
+
+/* ---------- Settings ---------- */
+.settings{margin-bottom:18px}
+.setgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.setgrid{grid-template-columns:minmax(0,1fr)}}
+.setgrid .wide{grid-column:1/-1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+  <h1>Latihan <span>Speaking</span></h1>
+  <div class="row">
+    <div class="tabs" role="tablist" aria-label="Menu">
+      <button role="tab" id="tab-call" aria-selected="true" aria-controls="view-call">Panggilan</button>
+      <button role="tab" id="tab-quick" aria-selected="false" aria-controls="view-quick">Latihan cepat</button>
+      <button role="tab" id="tab-hist" aria-selected="false" aria-controls="view-hist">Riwayat</button>
+    </div>
+    <button class="iconbtn" id="btnSettings" aria-expanded="false" aria-controls="settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Pengaturan</span></button>
+  </div>
+</header>
+
+<!-- ================= SETTINGS ================= -->
+<section class="panel settings" id="settings" hidden>
+  <h2>Pengaturan</h2>
+  <div class="setgrid">
+    <div class="field">
+      <label for="gkey">API key Gemini</label>
+      <input id="gkey" type="password" autocomplete="off" placeholder="AIza...">
+      <small>Disimpan hanya di browser perangkat ini. Wajib untuk mode Panggilan.</small>
+    </div>
+    <div class="field">
+      <label for="gmodel">Model Gemini</label>
+      <input id="gmodel" type="text" value="gemini-2.5-flash">
+      <small>Kalau error "model not found", web otomatis coba model lain.</small>
+    </div>
+    <div class="field">
+      <label for="silence">Diam berapa detik = selesai ngomong</label>
+      <select id="silence"><option>3</option><option>4</option><option selected>5</option><option>6</option><option>8</option></select>
+    </div>
+    <div class="field">
+      <label for="srlang">Logat yang didengar mic</label>
+      <select id="srlang"><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="en-AU">English (Australia)</option></select>
+    </div>
+    <div class="field">
+      <label for="voiceSel">Suara (opsional)</label>
+      <select id="voiceSel"><option value="">Otomatis sesuai logat</option></select>
+    </div>
+    <div class="field">
+      <label for="rateAdj">Kecepatan suara AI: <span id="rateVal">1.00</span>x</label>
+      <input id="rateAdj" type="range" min="0.7" max="1.3" step="0.05" value="1">
+    </div>
+    <div class="field wide">
+      <label for="about">Tentang aku (biar interviewer nyambung)</label>
+      <textarea id="about" rows="3" placeholder="Contoh: 4+ years processing telecom network data (drive test, ETL pipelines). Skills: Python, pandas, SQL, Excel, Power BI. Looking for a remote Data Analyst job."></textarea>
+      <small>Ditulis dalam bahasa Inggris. Disimpan di browser ini saja, tidak ikut ter-upload.</small>
+    </div>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button class="primary" id="btnSave">Simpan</button>
+    <button id="btnTestKey">Tes API key</button>
+    <span class="note" id="saveNote" aria-live="polite"></span>
+  </div>
+</section>
+
+<div id="noSR" class="alert" hidden style="margin-bottom:18px">Browser ini belum bisa mendengar suara. Pakai <b>Google Chrome</b> atau <b>Microsoft Edge</b> (di HP: Chrome Android).</div>
+
+<!-- ================= CALL ================= -->
+<section id="view-call" role="tabpanel" aria-labelledby="tab-call">
+  <!-- pre-call -->
+  <div id="preCall" class="panel">
+    <h2>Mau ngobrol sama siapa?</h2>
+    <div class="choices" role="radiogroup" aria-label="Lawan bicara">
+      <label class="choice"><input type="radio" name="persona" value="hr" checked><b>HR Interviewer</b><span>Simulasi interview Data Analyst remote, lengkap dengan pertanyaan lanjutan.</span></label>
+      <label class="choice"><input type="radio" name="persona" value="friend"><b>Teman ngobrol</b><span>Santai: keseharian, hobi, makanan, rencana weekend.</span></label>
+      <label class="choice"><input type="radio" name="persona" value="roleplay"><b>Roleplay kerja</b><span>Standup, presentasi dashboard, call klien, dan lainnya.</span></label>
+    </div>
+    <div class="opts">
+      <div class="field" id="scenarioField" hidden>
+        <label for="scenario">Situasi</label>
+        <select id="scenario">
+          <option value="standup">Daily standup tim data</option>
+          <option value="dashboard">Presentasi dashboard ke manager</option>
+          <option value="client">Call klien: laporan telat</option>
+          <option value="clarify">Minta kejelasan tugas baru</option>
+          <option value="offer">Nego gaji &amp; tanggal mulai</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="level">Level</label>
+        <select id="level"><option value="beginner">Pemula</option><option value="intermediate" selected>Menengah</option><option value="fluent">Lancar</option></select>
+      </div>
+      <div class="field">
+        <label for="minutes">Durasi</label>
+        <select id="minutes"><option value="5">5 menit</option><option value="10" selected>10 menit</option><option value="15">15 menit</option></select>
+      </div>
+      <div class="field">
+        <label for="accent">Logat lawan bicara</label>
+        <select id="accent"><option value="en-US">Amerika</option><option value="en-GB">Inggris (UK)</option><option value="en-AU">Australia</option></select>
+      </div>
+    </div>
+    <div class="startbar">
+      <button class="primary" id="btnStart"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>Mulai panggilan</button>
+      <span class="note">Pakai <b>earphone</b> biar mic nggak nangkep suara AI. Tombol: <kbd>Spasi</kbd>/<kbd>Enter</kbd> selesai ngomong · <kbd>H</kbd> hint · <kbd>T</kbd> tanya pakai B. Indonesia · <kbd>P</kbd> jeda</span>
+    </div>
+    <p class="alert" id="keyWarn" hidden style="margin-top:14px">API key Gemini belum diisi. Buka <b>Pengaturan</b> (kanan atas), tempel key-nya, lalu klik Simpan.</p>
+  </div>
+
+  <!-- in-call -->
+  <div id="inCall" class="callgrid" hidden>
+    <div class="stage" id="stage" data-state="idle">
+      <div class="stagehead"><span class="live" id="callTimer">00:00</span><span id="callMeta">10 menit</span></div>
+      <div class="who">
+        <div class="avatar" id="avatar">R</div>
+        <div class="name" id="pName">Rachel</div>
+        <div class="role" id="pRole">HR Recruiter</div>
+      </div>
+      <div class="statechip" id="stateChip" aria-live="polite">Menyambungkan…</div>
+      <div class="subs">
+        <div class="sub-ai" id="subAI"></div>
+        <div class="sub-me" id="subMe"></div>
+        <div class="silence" aria-hidden="true"><i id="silBar"></i></div>
+      </div>
+      <div class="hintbox" id="hintBox" hidden></div>
+      <div class="ctrls">
+        <button id="cDone" title="Selesai ngomong"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Selesai <kbd>Spasi</kbd></button>
+        <button id="cHint" title="Minta contoh jawaban"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>Hint <kbd>H</kbd></button>
+        <button id="cIndo" title="Tanya pakai Bahasa Indonesia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h10M10 5v3M7 8c0 4 3 7 7 8M13 8c-1 4-4 7-8 8M14 20l4-9 4 9M15.5 17h5"/></svg>Tanya B.Indo <kbd>T</kbd></button>
+        <button id="cPause" title="Jeda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14M16 5v14"/></svg><span id="cPauseTxt">Jeda</span> <kbd>P</kbd></button>
+        <button id="cTrans" class="mobile-only" title="Transkrip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Transkrip</button>
+        <button id="cEnd" class="danger" title="Akhiri panggilan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.7 13.3a16 16 0 0 0 3.4 2.6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 3.1 4.2 2 2 0 0 1 5.1 2h3a2 2 0 0 1 2 1.7M22 2 2 22"/></svg>Akhiri</button>
+      </div>
+    </div>
+    <aside class="panel transcript" id="transcript" aria-label="Transkrip">
+      <div class="sheethead"><h3>Transkrip</h3><button id="closeSheet">Tutup</button></div>
+      <div class="tlist" id="tlist"><p class="empty">Percakapan muncul di sini.</p></div>
+    </aside>
+  </div>
+
+  <!-- report -->
+  <div id="report" class="stack" hidden></div>
+</section>
+
+<!-- ================= QUICK PRACTICE ================= -->
+<section id="view-quick" role="tabpanel" aria-labelledby="tab-quick" hidden>
+  <div class="stack">
+    <section class="panel">
+      <div class="subtabs" role="group" aria-label="Mode latihan">
+        <button data-mode="interview" aria-pressed="true">Interview Data Analyst</button>
+        <button data-mode="daily" aria-pressed="false">Obrolan sehari-hari</button>
+        <button data-mode="free" aria-pressed="false">Topik bebas</button>
+      </div>
+      <p class="q" id="qTitle">Tell me about yourself.</p>
+      <p class="qhint" id="qHint">Tips: 60–90 detik. Background → pengalaman → kenapa posisi ini.</p>
+      <div class="row">
+        <button id="btnSpeakQ">Dengarkan</button>
+        <button id="btnNextQ">Pertanyaan lain</button>
+        <button id="btnCustomQ">Tulis topik sendiri</button>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Jawabanmu</h2>
+      <div class="recbar">
+        <button id="btnMic" class="mic" aria-label="Mulai rekam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
+        <div><div class="timer" id="qTimer">00:00</div><div class="status" id="qStatus">Klik tombol merah lalu mulai ngomong.</div></div>
+      </div>
+      <p class="interim" id="qInterim" aria-live="polite"></p>
+      <label class="label" for="answer">Teks jawaban (bisa diedit kalau mic salah dengar)</label>
+      <textarea class="ans" id="answer" placeholder="Hasil suaramu muncul di sini..."></textarea>
+      <div class="row" style="margin-top:12px">
+        <button id="btnCheck" class="primary">Cek grammar</button>
+        <button id="btnAI">Feedback AI</button>
+        <button id="btnClear">Hapus</button>
+      </div>
+    </section>
+    <section class="panel" id="qResultPanel">
+      <h2>Hasil koreksi</h2>
+      <div id="qResult"><p class="empty">Belum ada jawaban yang dicek.</p></div>
+      <div id="qAI" style="margin-top:14px"></div>
+    </section>
+  </div>
+</section>
+
+<!-- ================= HISTORY ================= -->
+<section id="view-hist" role="tabpanel" aria-labelledby="tab-hist" hidden>
+  <div class="twocol">
+    <section class="panel"><h2>Riwayat latihan</h2><ul class="hist" id="hist"></ul></section>
+    <div class="stack">
+      <section class="panel"><h2>Kesalahan yang sering muncul</h2><ul class="freq" id="freq"></ul></section>
+      <section class="panel"><h2>Ringkasan</h2><div id="sumStats"></div>
+        <div class="row" style="margin-top:14px"><button id="btnReset">Hapus riwayat</button></div></section>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=s=>{s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
+const isAndroid=/Android/i.test(navigator.userAgent);
+
+/* ================= STORAGE & SETTINGS ================= */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const settings=Object.assign({gkey:"",gmodel:"gemini-2.5-flash",silence:5,srlang:"en-US",voice:"",rate:1,about:""},store.get("ls.settings",{}));
+if(settings.gmodel==="gemini-flash-latest") settings.gmodel="gemini-2.5-flash";
+let history=store.get("ls.history",[]);
+function fillSettings(){
+  $("#gkey").value=settings.gkey; $("#gmodel").value=settings.gmodel; $("#silence").value=String(settings.silence);
+  $("#srlang").value=settings.srlang; $("#rateAdj").value=settings.rate; $("#rateVal").textContent=Number(settings.rate).toFixed(2);
+  $("#about").value=settings.about;
+}
+function readSettings(){
+  settings.gkey=$("#gkey").value.trim(); settings.gmodel=$("#gmodel").value.trim()||"gemini-2.5-flash";
+  settings.silence=parseFloat($("#silence").value)||5; settings.srlang=$("#srlang").value; settings.voice=$("#voiceSel").value;
+  settings.rate=parseFloat($("#rateAdj").value)||1; settings.about=$("#about").value.trim();
+  store.set("ls.settings",settings); updateKeyWarn();
+}
+$("#rateAdj").addEventListener("input",e=>$("#rateVal").textContent=Number(e.target.value).toFixed(2));
+$("#btnSettings").addEventListener("click",()=>{const s=$("#settings");s.hidden=!s.hidden;$("#btnSettings").setAttribute("aria-expanded",String(!s.hidden));});
+$("#btnSave").addEventListener("click",()=>{readSettings();$("#saveNote").textContent="Tersimpan.";});
+$("#btnTestKey").addEventListener("click",async()=>{
+  readSettings(); $("#saveNote").textContent="Ngetes…";
+  try{const r=await gemini("Reply with JSON only.",[{role:"user",parts:[{text:'Return {"ok":true}'}]}],0);
+    $("#saveNote").textContent=r&&r.ok?"API key jalan ("+settings.gmodel+").":"Tersambung, tapi jawabannya aneh.";}
+  catch(e){$("#saveNote").textContent="Gagal: "+e.message;}
+});
+function updateKeyWarn(){$("#keyWarn").hidden=!!settings.gkey;}
+
+/* ================= TABS ================= */
+$$(".tabs [role=tab]").forEach(t=>t.addEventListener("click",()=>{
+  $$(".tabs [role=tab]").forEach(x=>{x.setAttribute("aria-selected","false");$("#"+x.getAttribute("aria-controls")).hidden=true});
+  t.setAttribute("aria-selected","true"); $("#"+t.getAttribute("aria-controls")).hidden=false;
+  if(t.id==="tab-hist") renderHistory();
+}));
+
+/* ================= GEMINI ================= */
+const FALLBACK_MODELS=["gemini-2.5-flash","gemini-2.5-flash-lite","gemini-flash-latest","gemini-flash-lite-latest"];
+function parseJSON(s){s=String(s||"").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"");const a=s.indexOf("{"),b=s.lastIndexOf("}");if(a<0||b<a)throw new Error("Jawaban AI bukan JSON.");return JSON.parse(s.slice(a,b+1));}
+async function callModel(model,system,contents,temperature){
+  const gen={responseMimeType:"application/json",temperature};
+  if(/2\.5/.test(model)) gen.thinkingConfig={thinkingBudget:0};
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{
+    method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":settings.gkey},
+    body:JSON.stringify({systemInstruction:{parts:[{text:system}]},contents,generationConfig:gen})
+  });
+  const j=await r.json().catch(()=>({}));
+  return {r,j};
+}
+async function gemini(system,contents,temperature=0.7){
+  if(!settings.gkey) throw new Error("API key Gemini belum diisi (Pengaturan).");
+  const list=[settings.gmodel,...FALLBACK_MODELS.filter(m=>m!==settings.gmodel)];
+  let lastErr="";
+  for(const m of list){
+    const {r,j}=await callModel(m,system,contents,temperature);
+    if(r.ok){
+      if(m!==settings.gmodel){settings.gmodel=m;store.set("ls.settings",settings);$("#gmodel").value=m;}
+      const c=j.candidates&&j.candidates[0];
+      const txt=c&&c.content&&c.content.parts?c.content.parts.map(p=>p.text||"").join(""):"";
+      if(!txt) throw new Error("AI tidak menjawab"+(c&&c.finishReason?" ("+c.finishReason+")":"")+".");
+      return parseJSON(txt);
+    }
+    const msg=(j.error&&j.error.message)||("HTTP "+r.status);
+    lastErr=msg;
+    if(r.status===404||(r.status===400&&/not found|not supported|thinking/i.test(msg))) continue;
+    if(r.status===429) throw Object.assign(new Error("Batas gratis Gemini tercapai. Tunggu sebentar ya."),{rate:true});
+    if(r.status===400&&/API key/i.test(msg)) throw new Error("API key tidak valid. Cek lagi di Pengaturan.");
+    throw new Error(msg);
+  }
+  throw new Error("Model tidak tersedia: "+lastErr);
+}
+
+/* ================= SPEECH: TTS ================= */
+const hasTTS="speechSynthesis" in window;
+function voicesFor(lang){return hasTTS?speechSynthesis.getVoices().filter(v=>v.lang.replace("_","-").toLowerCase().startsWith(lang.toLowerCase())):[]}
+function pickVoice(lang){
+  if(!hasTTS) return null;
+  const all=speechSynthesis.getVoices();
+  if(settings.voice){const v=all.find(x=>x.name===settings.voice);if(v)return v;}
+  const vs=voicesFor(lang); const en=all.filter(v=>/^en/i.test(v.lang));
+  const pool=vs.length?vs:en;
+  return pool.find(v=>/natural|online|neural/i.test(v.name))||pool.find(v=>/google/i.test(v.name))||pool[0]||null;
+}
+function loadVoiceList(){
+  if(!hasTTS) return;
+  const sel=$("#voiceSel"), cur=settings.voice;
+  sel.innerHTML='<option value="">Otomatis sesuai logat</option>';
+  speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)).forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name+" ("+v.lang+")";sel.appendChild(o)});
+  sel.value=cur||"";
+}
+if(hasTTS){loadVoiceList();speechSynthesis.onvoiceschanged=loadVoiceList;}
+let ttsToken=0;
+function speak(text,{lang="en-US",rate=1,onDone}={}){
+  const token=++ttsToken;
+  if(!hasTTS||!text){onDone&&setTimeout(onDone,50);return}
+  speechSynthesis.cancel();
+  const parts=(String(text).match(/[^.!?]+[.!?]*["')\]]*\s*/g)||[text]).map(s=>s.trim()).filter(Boolean);
+  const v=pickVoice(lang); let i=0, done=false;
+  const words=String(text).split(/\s+/).length;
+  const guard=setTimeout(finish,(words/ (2.3*rate))*1000+4000); // cadangan bila onend tidak terpanggil
+  function finish(){if(done||token!==ttsToken)return;done=true;clearTimeout(guard);onDone&&onDone();}
+  function next(){
+    if(token!==ttsToken){clearTimeout(guard);return}
+    if(i>=parts.length){finish();return}
+    const u=new SpeechSynthesisUtterance(parts[i++]);
+    if(v){u.voice=v;u.lang=v.lang}else u.lang=lang;
+    u.rate=rate*settings.rate;
+    u.onend=next; u.onerror=next;
+    speechSynthesis.speak(u);
+  }
+  next();
+}
+function stopSpeak(){ttsToken++;if(hasTTS)speechSynthesis.cancel();}
+
+/* ================= SPEECH: STT ================= */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR) $("#noSR").hidden=false;
+
+/* ================= PERSONAS ================= */
+const PERSONAS={
+  hr:{name:"Rachel",role:"HR Recruiter",
+    brief:"You are Rachel, a warm but professional HR recruiter at an international tech company. You are interviewing the user for a REMOTE Data Analyst position. Run a realistic interview: greet, small talk (1 turn), then ask about background, data projects, SQL/Python/Excel skills, data cleaning, communication with non-technical people, teamwork across time zones, strengths/weaknesses, and why this role. Ask natural follow-up questions based on his answers (numbers, impact, tools, STAR details). Near the end, ask if he has questions for you and answer briefly."},
+  friend:{name:"Tom",role:"Teman ngobrol",
+    brief:"You are Tom, a friendly, curious English-speaking friend. Have a relaxed casual chat: daily life, family, food, hobbies, music, weekend plans, his city, news, funny stories. Share small bits about yourself too so it feels like a real friend, then toss the conversation back with one question."},
+  roleplay:{
+    standup:{name:"Mike",role:"Team Lead · Daily standup",brief:"You are Mike, the team lead of a remote data team running a short daily stand-up meeting. Ask what he did yesterday, what he plans today, and whether he has blockers. Ask follow-ups about task details, estimates, and dependencies like a real lead."},
+    dashboard:{name:"Linda",role:"Manager · Review dashboard",brief:"You are Linda, his manager. He is presenting a performance dashboard (e.g., network quality or sales) to you over a video call. Ask him to walk you through it, then ask about key insights, surprising numbers, data sources, data quality, and recommended next steps. Be curious and slightly challenging."},
+    client:{name:"David",role:"Client dari Australia",brief:"You are David, a client from Australia. The weekly data report he delivers is late this week. You are polite but a bit frustrated. Ask what happened, when you'll get it, and how this will be prevented. Let him practice explaining, apologizing professionally, and proposing solutions."},
+    clarify:{name:"Priya",role:"Project Manager · Tugas baru",brief:"You are Priya, a project manager giving him a new data task with deliberately vague requirements (e.g., 'build a churn report for next week'). Answer his clarifying questions realistically. If he does not ask clarifying questions, gently prompt him. The goal is for him to practice asking good questions about scope, data, deadline, and format."},
+    offer:{name:"Rachel",role:"HR · Offer call",brief:"You are Rachel from HR calling with a job offer for a remote Data Analyst role. Discuss salary (in USD per month), start date, working hours across time zones, and equipment. Be friendly; let him practice negotiating politely and asking questions."}
+  }
+};
+const LEVELS={
+  beginner:{rate:.85,txt:"The learner is a BEGINNER (A2-B1). Use very simple, common words and short sentences (max 12 words each). Speak clearly. Be extra encouraging."},
+  intermediate:{rate:.95,txt:"The learner is INTERMEDIATE (B1-B2). Use natural, everyday English with moderate vocabulary."},
+  fluent:{rate:1.05,txt:"The learner is FLUENT-ish (B2-C1). Speak naturally like a native professional, including common idioms and phrasal verbs."}
+};
+function buildSystem(p,level,minutes){
+  return p.brief+"\n\n"+
+  "CONTEXT: This is a live VOICE call to help Adits, an Indonesian adult, practice spoken English. "+LEVELS[level].txt+" The call lasts about "+minutes+" minutes.\n"+
+  (settings.about?"ABOUT ADITS (use when relevant): "+settings.about+"\n":"")+
+  "RULES:\n"+
+  "- Your reply is spoken aloud by text-to-speech: 1-3 short sentences, max ~45 words. No lists, emojis, markdown, or stage directions.\n"+
+  "- Ask only ONE question at a time, and end most turns with a question so he keeps talking.\n"+
+  "- His input comes from speech-to-text: ignore missing punctuation/capitalization and obvious mis-hearings. Never correct those.\n"+
+  "- If he makes a clear grammar or word-choice mistake, recast it naturally inside your reply the way a kind native speaker would (e.g., 'Oh, so you've worked there for four years. ...'), WITHOUT saying he made a mistake. Report only the single most useful mistake in \"fix\".\n"+
+  "- If his message is marked [INDONESIAN] or he asks how to say something, briefly give the English phrase, invite him to try saying it, then continue the conversation.\n"+
+  "- If the message is [USER SILENT], gently rephrase or simplify your last question, or offer an easier one.\n"+
+  "- Messages contain [time: X of Y min]. When you see [TIME IS UP], wrap up warmly in 1-2 sentences and set end=true. Otherwise end=false.\n"+
+  'OUTPUT strictly JSON: {"reply":"what you say","fix":null or {"wrong":"his exact words","right":"corrected words","type":"one of: tense, subject-verb, article, preposition, plural, word choice, word order, missing word, other","note":"very short explanation in casual Indonesian (bahasa santai)"},"end":false}';
+}
+
+/* ================= CALL ENGINE ================= */
+let call=null, wakeLock=null;
+function personaFor(kind,scenario){return kind==="roleplay"?PERSONAS.roleplay[scenario]:PERSONAS[kind]}
+$$("input[name=persona]").forEach(r=>r.addEventListener("change",()=>{$("#scenarioField").hidden=$("input[name=persona]:checked").value!=="roleplay"}));
+
+function setState(s,chip){
+  if(!call) return; call.state=s; $("#stage").dataset.state=s;
+  const n=call.p.name;
+  const txt={thinking:n+" lagi mikir…",speaking:n+" lagi ngomong · Spasi = skip",listening:(call.idLang?"Ngomong pakai B. Indonesia":"Giliranmu, ngomong aja")+" · diam "+settings.silence+" dtk = selesai",paused:"Dijeda · tekan P / Lanjut",error:"Ada kendala"}[s]||"";
+  $("#stateChip").textContent=chip||txt;
+}
+async function startCall(){
+  readSettings();
+  if(!settings.gkey){$("#keyWarn").hidden=false;$("#settings").hidden=false;$("#gkey").focus();return}
+  if(!SR){$("#noSR").hidden=false;return}
+  const kind=$("input[name=persona]:checked").value, scenario=$("#scenario").value;
+  const level=$("#level").value, minutes=parseInt($("#minutes").value,10), accent=$("#accent").value;
+  const p=personaFor(kind,scenario);
+  call={kind,scenario,level,minutes,accent,p,system:buildSystem(p,level,minutes),contents:[],lines:[],fixes:[],
+        startedAt:Date.now(),userWords:0,userSpeakMs:0,state:"idle",paused:false,ending:false,ended:false,idLang:false,silentCount:0,timer:null,rec:null,listen:null};
+  $("#preCall").hidden=true; $("#report").hidden=true; $("#inCall").hidden=false;
+  $("#avatar").textContent=p.name[0]; $("#pName").textContent=p.name; $("#pRole").textContent=p.role;
+  $("#callMeta").textContent=minutes+" menit · "+{beginner:"Pemula",intermediate:"Menengah",fluent:"Lancar"}[level];
+  $("#subAI").textContent=""; $("#subMe").textContent=""; $("#hintBox").hidden=true; renderTranscript();
+  call.timer=setInterval(()=>{if(call)$("#callTimer").textContent=fmt((Date.now()-call.startedAt)/1000)},500);
+  try{wakeLock=await navigator.wakeLock?.request("screen")}catch(_){}
+  // "buka kunci" TTS di HP dengan ucapan kosong dalam gesture klik
+  if(hasTTS){const u=new SpeechSynthesisUtterance(" ");u.volume=0;speechSynthesis.speak(u);}
+  aiTurn("[START CALL] Greet him by name (Adits) and begin. [time: 0 of "+minutes+" min]");
+}
+function timeMeta(){
+  const el=(Date.now()-call.startedAt)/60000;
+  if(el>=call.minutes){call.ending=true;return " [time: "+el.toFixed(1)+" of "+call.minutes+" min] [TIME IS UP]"}
+  return " [time: "+el.toFixed(1)+" of "+call.minutes+" min]";
+}
+async function aiTurn(userMsg,retry=0){
+  if(!call||call.ended) return;
+  if(retry===0) call.contents.push({role:"user",parts:[{text:userMsg}]});
+  setState("thinking");
+  let res;
+  try{ res=await gemini(call.system,call.contents,0.8); }
+  catch(e){
+    if(!call||call.ended) return;
+    if(e.rate&&retry<2){setState("thinking","Batas per menit tercapai, nyoba lagi 20 detik…");await new Promise(r=>setTimeout(r,20000));return aiTurn(userMsg,retry+1)}
+    setState("error","Gagal: "+e.message);
+    $("#subAI").innerHTML='<button class="primary" id="retryBtn">Coba lagi</button>';
+    $("#retryBtn").onclick=()=>aiTurn(userMsg,1);
+    return;
+  }
+  if(!call||call.ended) return;
+  const reply=String(res.reply||"").trim()||"Sorry, could you say that again?";
+  call.contents.push({role:"model",parts:[{text:JSON.stringify({reply,end:!!res.end})}]});
+  if(res.fix&&res.fix.wrong&&res.fix.right&&res.fix.wrong.trim().toLowerCase()!==res.fix.right.trim().toLowerCase()){
+    const lastMe=[...call.lines].reverse().find(l=>l.who==="me");
+    if(lastMe){lastMe.fix=res.fix;call.fixes.push(res.fix)}
+  }
+  call.lines.push({who:"ai",text:reply}); renderTranscript();
+  $("#subAI").textContent=reply; $("#subMe").textContent=""; $("#hintBox").hidden=true;
+  setState("speaking");
+  speak(reply,{lang:call.accent,rate:LEVELS[call.level].rate,onDone:()=>{
+    if(!call||call.ended) return;
+    if(res.end||call.ending){finishCall();return}
+    if(call.paused){setState("paused");return}
+    setTimeout(()=>listen(),250);
+  }});
+}
+function listen(){
+  if(!call||call.ended) return;
+  setState("listening");
+  const L=call.listen={final:"",interim:"",heard:false,first:0,last:0,start:Date.now(),active:true,lang:call.idLang?"id-ID":settings.srlang};
+  $("#silBar").style.width="0";
+  const begin=()=>{
+    if(!L.active) return;
+    const rec=new SR(); call.rec=rec;
+    rec.lang=L.lang; rec.interimResults=true; rec.continuous=!isAndroid; rec.maxAlternatives=1;
+    let sessionFinal="";
+    rec.onresult=e=>{
+      if(!L.active) return;
+      let interim="";
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const r=e.results[i];
+        if(r.isFinal) sessionFinal+=r[0].transcript.trim()+" "; else interim+=r[0].transcript;
+      }
+      L.interim=interim; L.cur=sessionFinal;
+      const now=Date.now(); if(!L.heard){L.heard=true;L.first=now} L.last=now;
+      $("#subMe").textContent=(L.final+sessionFinal+interim).trim();
+    };
+    rec.onerror=e=>{
+      if(e.error==="not-allowed"||e.error==="service-not-allowed"){L.active=false;setState("error","Izin mikrofon ditolak. Klik ikon gembok di address bar → izinkan mikrofon.");}
+      else if(e.error==="audio-capture"){L.active=false;setState("error","Mikrofon tidak terdeteksi.");}
+      else if(e.error==="network"){setState("listening","Pengenalan suara butuh internet…");}
+    };
+    rec.onend=()=>{
+      L.final+=(L.cur||""); L.cur="";
+      if(L.interim&&isAndroid){L.final+=L.interim+" ";L.interim=""}
+      if(L.active&&!call.paused) setTimeout(begin,120);
+    };
+    try{rec.start()}catch(_){}
+  };
+  begin();
+  clearInterval(call.silTimer);
+  call.silTimer=setInterval(()=>{
+    if(!L.active||!call||call.paused) return;
+    const now=Date.now(), lim=settings.silence*1000;
+    if(L.heard){
+      const q=Math.min(1,(now-L.last)/lim); $("#silBar").style.width=(q*100)+"%";
+      if(now-L.last>=lim) endTurn();
+    }else if(now-L.start>30000){ endTurn(true); }
+  },100);
+}
+function stopListening(){
+  if(!call||!call.listen) return;
+  call.listen.active=false; clearInterval(call.silTimer);
+  try{call.rec&&call.rec.abort()}catch(_){}
+  $("#silBar").style.width="0";
+}
+function endTurn(silent){
+  if(!call||call.state!=="listening") return;
+  const L=call.listen; stopListening();
+  const text=(L.final+(L.cur||"")+" "+(L.interim||"")).replace(/\s+/g," ").trim();
+  const wasIndo=call.idLang; call.idLang=false;
+  if(!text||silent){
+    call.silentCount++;
+    aiTurn("[USER SILENT]"+timeMeta()); return;
+  }
+  call.silentCount=0;
+  call.lines.push({who:"me",text,indo:wasIndo}); renderTranscript();
+  if(!wasIndo){call.userWords+=wordCount(text); if(L.first) call.userSpeakMs+=Math.max(1000,L.last-L.first);}
+  aiTurn((wasIndo?"[INDONESIAN] ":"")+text+timeMeta());
+}
+function finishCall(early){
+  if(!call||call.ended) return;
+  call.ended=true; stopListening(); stopSpeak(); clearInterval(call.timer);
+  try{wakeLock&&wakeLock.release()}catch(_){}; wakeLock=null;
+  const meLines=call.lines.filter(l=>l.who==="me"&&!l.indo);
+  $("#inCall").hidden=true; $("#transcript").classList.remove("open");
+  if(meLines.length<2){ $("#preCall").hidden=false; call=null; return; }
+  showReport(call);
+}
+/* controls */
+function togglePause(){
+  if(!call||call.ended) return;
+  call.paused=!call.paused;
+  $("#cPauseTxt").textContent=call.paused?"Lanjut":"Jeda";
+  if(call.paused){ if(call.state==="listening"){stopListening();setState("paused")} }
+  else if(call.state==="paused"||call.state==="listening"){ listen(); }
+}
+function doneOrSkip(){
+  if(!call) return;
+  if(call.state==="listening"){ if(call.listen.heard||call.listen.final) endTurn(); }
+  else if(call.state==="speaking"){ stopSpeak(); if(call.ending){finishCall();return} if(!call.paused) listen(); else setState("paused"); }
+}
+function askIndo(){
+  if(!call||call.ended) return;
+  call.idLang=!call.idLang;
+  if(call.state==="listening"){ stopListening(); listen(); }
+  else setState(call.state);
+}
+async function hint(){
+  if(!call||call.ended) return;
+  const lastAI=[...call.lines].reverse().find(l=>l.who==="ai");
+  if(!lastAI) return;
+  const box=$("#hintBox"); box.hidden=false; box.textContent="Nyari contoh jawaban…";
+  try{
+    const h=await gemini("You help an Indonesian English learner answer a spoken question. "+LEVELS[call.level].txt+(settings.about?" About him: "+settings.about:"")+' Return JSON {"starters":["2 short sentence starters he can say"],"words":["4 useful words or phrases"],"tip":"one short tip in casual Indonesian"}',
+      [{role:"user",parts:[{text:"Question: "+lastAI.text}]}],0.7);
+    box.innerHTML='<b>Coba mulai dengan:</b><ul>'+(h.starters||[]).map(s=>"<li>"+esc(s)+"</li>").join("")+"</ul>"+
+      (h.words&&h.words.length?'<div style="margin-top:6px"><b>Kosakata:</b> '+h.words.map(esc).join(" · ")+"</div>":"")+
+      (h.tip?'<div style="margin-top:6px;opacity:.85">'+esc(h.tip)+"</div>":"");
+  }catch(e){box.textContent="Hint gagal: "+e.message}
+}
+$("#btnStart").addEventListener("click",startCall);
+$("#cDone").addEventListener("click",doneOrSkip);
+$("#cHint").addEventListener("click",hint);
+$("#cIndo").addEventListener("click",askIndo);
+$("#cPause").addEventListener("click",togglePause);
+$("#cEnd").addEventListener("click",()=>finishCall(true));
+$("#cTrans").addEventListener("click",()=>$("#transcript").classList.toggle("open"));
+$("#closeSheet").addEventListener("click",()=>$("#transcript").classList.remove("open"));
+document.addEventListener("keydown",e=>{
+  if(!call||call.ended||$("#inCall").hidden) return;
+  if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  const k=e.key.toLowerCase();
+  if(k===" "||k==="enter"){e.preventDefault();doneOrSkip()}
+  else if(k==="h"){e.preventDefault();hint()}
+  else if(k==="t"){e.preventDefault();askIndo()}
+  else if(k==="p"){e.preventDefault();togglePause()}
+});
+function renderTranscript(){
+  const el=$("#tlist");
+  if(!call||!call.lines.length){el.innerHTML='<p class="empty">Percakapan muncul di sini.</p>';return}
+  el.innerHTML=call.lines.map(l=>'<div class="bub '+l.who+'">'+(l.indo?'<span class="label">B. Indonesia</span><br>':"")+esc(l.text)+
+    (l.fix?'<div class="fix"><del>'+esc(l.fix.wrong)+'</del> → <ins>'+esc(l.fix.right)+'</ins><small>'+esc(l.fix.note||"")+'</small></div>':"")+'</div>').join("");
+  el.scrollTop=el.scrollHeight;
+}
+
+/* ================= REPORT ================= */
+async function showReport(c){
+  const box=$("#report"); box.hidden=false;
+  const dur=(Date.now()-c.startedAt)/1000;
+  const wpm=c.userSpeakMs>5000?Math.round(c.userWords/(c.userSpeakMs/60000)):null;
+  const allMe=c.lines.filter(l=>l.who==="me"&&!l.indo).map(l=>l.text).join(" ");
+  const fil=fillerCount(allMe);
+  box.innerHTML='<section class="panel"><h2>Rapor panggilan dengan '+esc(c.p.name)+'</h2><p class="empty">Lagi nyusun rapor…</p></section>';
+  let rep=null, err="";
+  try{
+    const transcript=c.lines.map(l=>(l.who==="ai"?c.p.name:"ADITS")+(l.indo?" (Indonesian)":"")+": "+l.text).join("\n");
+    rep=await gemini("You are an expert English speaking coach for Indonesian adults. Evaluate ONLY the lines spoken by ADITS (speech-to-text, so ignore punctuation/capitalization and obvious mis-hearings). Be honest, specific and encouraging. Write explanations in casual Indonesian (bahasa santai).\n"+
+      'Return JSON: {"scores":{"grammar":1-10,"vocabulary":1-10,"fluency":1-10,"overall":1-10},"summary":"2-3 sentences in casual Indonesian","strengths":["2 things he did well, Indonesian"],"corrections":[{"wrong":"his exact phrase","right":"corrected","type":"tense|subject-verb|article|preposition|plural|word choice|word order|missing word|other","note":"short Indonesian explanation"}],"phrases":[{"en":"useful natural phrase for this situation","id":"meaning in Indonesian"}],"better":"rewrite of his weakest answer as a natural model answer","focus":"one thing to focus on next time, Indonesian"}. corrections: up to 10, most important first. phrases: 5.',
+      [{role:"user",parts:[{text:"Situation: "+c.p.role+"\nTranscript:\n"+transcript}]}],0.4);
+  }catch(e){err=e.message}
+  const fixes=(rep&&rep.corrections&&rep.corrections.length)?rep.corrections:c.fixes;
+  const s=(rep&&rep.scores)||{};
+  let h='<section class="panel"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h2 style="margin-bottom:4px">Rapor panggilan dengan '+esc(c.p.name)+'</h2><p class="empty" style="margin:0">'+esc(c.p.role)+' · '+fmt(dur)+' · '+c.userWords+' kata kamu ucapkan</p></div>'+
+    '<div class="row"><button id="rAgain" class="primary">Telepon lagi</button><button id="rBack">Ganti lawan bicara</button></div></div>'+
+    (err?'<p class="alert" style="margin-top:12px">Rapor AI gagal dibuat ('+esc(err)+'). Di bawah ini koreksi yang tercatat selama panggilan.</p>':"")+
+    '<div class="scores" style="margin-top:16px">'+
+      '<div class="stat"><b>'+(s.overall??"–")+'<small>/10</small></b><small>keseluruhan</small></div>'+
+      '<div class="stat"><b>'+(s.grammar??"–")+'</b><small>grammar</small></div>'+
+      '<div class="stat"><b>'+(s.vocabulary??"–")+'</b><small>kosakata</small></div>'+
+      '<div class="stat"><b>'+(s.fluency??"–")+'</b><small>kelancaran</small></div>'+
+      '<div class="stat"><b>'+(wpm??"–")+'</b><small>kata/menit (ideal 110–150)</small></div>'+
+      '<div class="stat"><b>'+fixes.length+'</b><small>koreksi</small></div>'+
+      '<div class="stat"><b>'+fil+'</b><small>filler (um, uh…)</small></div>'+
+      '<div class="stat"><b>'+c.lines.filter(l=>l.who==="me").length+'</b><small>giliran bicara</small></div>'+
+    '</div>'+
+    (rep&&rep.summary?'<p style="margin:16px 0 0">'+esc(rep.summary)+'</p>':"")+
+    (rep&&rep.strengths&&rep.strengths.length?'<p class="note" style="font-size:14px">Yang udah bagus: '+rep.strengths.map(esc).join(" · ")+'</p>':"")+
+    (rep&&rep.focus?'<p class="better" style="margin-top:12px"><span class="label">Fokus berikutnya</span><br>'+esc(rep.focus)+'</p>':"")+
+  '</section>';
+  h+='<div class="twocol"><section class="panel"><h2>Koreksi</h2>'+(fixes.length?'<ul class="fixlist">'+fixes.map(f=>'<li><div class="chg"><del>'+esc(f.wrong)+'</del> → <ins>'+esc(f.right)+'</ins></div><p>'+esc(f.note||"")+(f.type?' · <span class="label">'+esc(f.type)+'</span>':"")+'</p></li>').join("")+'</ul>':'<p class="empty">Nggak ada kesalahan yang dicatat. Mantap!</p>')+'</section>';
+  h+='<div class="stack">';
+  if(rep&&rep.phrases&&rep.phrases.length) h+='<section class="panel"><h2>Frasa buat dipakai lagi</h2><ul class="phrases">'+rep.phrases.map((p,i)=>'<li><div><div>'+esc(p.en)+'</div><small>'+esc(p.id)+'</small></div><button data-say="'+i+'" aria-label="Dengarkan">▶</button></li>').join("")+'</ul></section>';
+  if(rep&&rep.better) h+='<section class="panel"><h2>Contoh jawaban yang lebih natural</h2><p>'+esc(rep.better)+'</p><button id="rBetter">Dengarkan</button></section>';
+  h+='<section class="panel"><details><summary style="cursor:pointer;font-weight:600">Lihat transkrip lengkap</summary><div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">'+c.lines.map(l=>'<div class="bub '+l.who+'">'+esc(l.text)+'</div>').join("")+'</div></details></section></div></div>';
+  box.innerHTML=h;
+  box.querySelectorAll("[data-say]").forEach(b=>b.addEventListener("click",()=>speak(rep.phrases[+b.dataset.say].en,{lang:c.accent})));
+  const rb=$("#rBetter"); if(rb) rb.addEventListener("click",()=>speak(rep.better,{lang:c.accent,rate:.95}));
+  $("#rAgain").addEventListener("click",()=>{box.hidden=true;call=null;startCall()});
+  $("#rBack").addEventListener("click",()=>{box.hidden=true;call=null;$("#preCall").hidden=false});
+  saveHistory({kind:"call",title:c.p.name+" · "+c.p.role,words:c.userWords,errs:fixes.length,score:s.overall??null,
+    rules:fixes.map(f=>f.type||"other").slice(0,12),dur:Math.round(dur)});
+  call=null;
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ================= QUICK PRACTICE ================= */
+const BANK={
+  interview:[["Tell me about yourself.","60–90 detik. Background → pengalaman → kenapa posisi ini."],["Why do you want to work as a Data Analyst?","Hubungkan pengalaman data processing-mu dengan minat ke analisis."],["Tell me about a data project you are proud of.","Pakai pola STAR: Situation, Task, Action, Result."],["How do you handle messy or missing data?","Langkah konkret: cek, bersihkan, validasi, dokumentasi."],["Explain the difference between INNER JOIN and LEFT JOIN.","Jelaskan seperti ke orang non-teknis."],["Describe a time you found an insight that changed a decision.","Sebut angka hasilnya."],["How do you explain technical results to non-technical people?","Contoh: dashboard, ringkasan, visual."],["What tools do you use for data analysis, and why?","Python, SQL, Excel, Power BI — kapan pakai yang mana."],["Tell me about a mistake you made at work and what you learned.","Jujur, singkat, fokus ke pelajarannya."],["What is an ETL pipeline? Describe one you built.","Ceritakan dari pengalamanmu."],["Where do you see yourself in three years?","Sebut rencana belajar Data Engineering."],["Why should we hire you?","Tiga alasan, masing-masing dengan bukti."],["How comfortable are you working remotely with a team in another time zone?","Sebut kebiasaan komunikasi dan tools."]],
+  daily:[["What did you do this morning?","Pakai past tense."],["Describe your hometown to a foreigner.","Makanan, cuaca, tempat menarik."],["What is your favorite food and how do you make it?","Urutan: first, then, after that, finally."],["What did you learn this week?","Bisa soal Python, SQL, apa saja."],["What would you do if you won a lottery?","Conditional: If I won..., I would..."],["Describe a typical weekend in your family.","Usually, sometimes, often..."],["What kind of music do you like and why?","Kasih contoh lagu atau artis."],["Tell me about a place you want to visit.","I want to / I'm planning to..."]],
+  free:[["Talk about anything you like for one minute.","Usahakan tanpa berhenti lama."],["Explain how to make a cup of coffee.","Kalimat perintah dan urutan."],["Do you think AI will change jobs in Indonesia? Why?","Opini + alasan + contoh."],["Compare living in a small city and a big city.","Comparative: bigger, more expensive..."],["Describe a movie or series you watched recently.","Past tense + opini."]]
+};
+let qMode="interview",qIdx=0,qCur=BANK.interview[0][0],qRec=null,qOn=false,qFinal="",qStart=0,qElapsed=0,qTick=null;
+function showQ(){const l=BANK[qMode];const [q,h]=l[qIdx%l.length];qCur=q;$("#qTitle").textContent=q;$("#qHint").textContent="Tips: "+h;}
+$$(".subtabs button").forEach(b=>b.addEventListener("click",()=>{$$(".subtabs button").forEach(x=>x.setAttribute("aria-pressed","false"));b.setAttribute("aria-pressed","true");qMode=b.dataset.mode;qIdx=Math.floor(Math.random()*BANK[qMode].length);showQ();}));
+$("#btnNextQ").addEventListener("click",()=>{const n=BANK[qMode].length;let x=qIdx;while(n>1&&x===qIdx)x=Math.floor(Math.random()*n);qIdx=x;showQ();});
+$("#btnCustomQ").addEventListener("click",()=>{const b=$("#qTitle");b.contentEditable="true";b.focus();document.getSelection().selectAllChildren(b);$("#qHint").textContent="Ketik topikmu di atas, lalu tekan Enter.";});
+$("#qTitle").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();e.target.contentEditable="false";qCur=e.target.textContent.trim()||qCur;$("#qHint").textContent="Topik buatanmu sendiri. Ngomong 1–2 menit.";}});
+$("#btnSpeakQ").addEventListener("click",()=>speak(qCur,{lang:settings.srlang,rate:.95}));
+if(!SR) $("#btnMic").disabled=true;
+function qStartRec(){
+  stopSpeak(); qRec=new SR(); qRec.lang=settings.srlang; qRec.continuous=!isAndroid; qRec.interimResults=true;
+  qFinal=$("#answer").value.trim(); if(qFinal) qFinal+=" ";
+  qRec.onresult=e=>{let im="";for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)qFinal+=r[0].transcript.trim()+" ";else im+=r[0].transcript;}$("#answer").value=qFinal.trim();$("#qInterim").textContent=im;};
+  qRec.onerror=e=>{const m={"not-allowed":"Izin mikrofon ditolak. Klik ikon gembok di address bar → izinkan.","no-speech":"Nggak ada suara terdengar.","network":"Butuh internet.","audio-capture":"Mic tidak terdeteksi."};$("#qStatus").textContent=m[e.error]||("Error mic: "+e.error);};
+  qRec.onend=()=>{if(qOn){try{qRec.start()}catch(_){}}};
+  try{qRec.start()}catch(_){}
+  qOn=true;qStart=Date.now();$("#btnMic").classList.add("on");$("#qStatus").textContent="Lagi mendengarkan… klik lagi untuk berhenti.";
+  qTick=setInterval(()=>{$("#qTimer").textContent=fmt((Date.now()-qStart)/1000)},250);
+}
+function qStopRec(){qOn=false;clearInterval(qTick);qElapsed=(Date.now()-qStart)/1000;try{qRec&&qRec.stop()}catch(_){}$("#btnMic").classList.remove("on");$("#qInterim").textContent="";$("#qStatus").textContent="Selesai. Klik Cek grammar.";}
+$("#btnMic").addEventListener("click",()=>qOn?qStopRec():qStartRec());
+$("#btnClear").addEventListener("click",()=>{$("#answer").value="";qFinal="";qElapsed=0;$("#qTimer").textContent="00:00";});
+
+const FILLERS=["um","uh","uhm","erm","hmm","you know","i mean","basically"];
+function wordCount(t){return (String(t).match(/[A-Za-z']+/g)||[]).length}
+function fillerCount(t){const low=" "+String(t).toLowerCase().replace(/[^a-z' ]/g," ")+" ";let n=0;FILLERS.forEach(f=>{const re=new RegExp("\\s"+f.replace(/ /g,"\\s+")+"(?=\\s)","g");n+=(low.match(re)||[]).length});return n;}
+function applyFixes(text,ms){let out=text;[...ms].sort((a,b)=>b.offset-a.offset).forEach(m=>{if(m.replacements&&m.replacements.length)out=out.slice(0,m.offset)+m.replacements[0].value+out.slice(m.offset+m.length)});return out;}
+function isStyle(m){return /style|typographical|whitespace/i.test((m.rule&&m.rule.issueType)||"")}
+function markText(text,ms){let h="",p=0;[...ms].sort((a,b)=>a.offset-b.offset).forEach(m=>{if(m.offset<p)return;h+=esc(text.slice(p,m.offset))+'<mark class="'+(isStyle(m)?"style":"")+'" title="'+esc(m.message)+'">'+esc(text.slice(m.offset,m.offset+m.length))+"</mark>";p=m.offset+m.length});return h+esc(text.slice(p));}
+async function checkGrammar(text){
+  const r=await fetch("https://api.languagetool.org/v2/check",{method:"POST",body:new URLSearchParams({text,language:settings.srlang,level:"picky"})});
+  if(!r.ok) throw new Error(r.status===429?"Terlalu sering cek (batas gratis ~20x/menit).":"Server grammar error ("+r.status+").");
+  const j=await r.json();
+  return (j.matches||[]).filter(m=>!/UPPERCASE_SENTENCE_START|PUNCTUATION_PARAGRAPH_END|COMMA_PARENTHESIS_WHITESPACE/.test((m.rule&&m.rule.id)||""));
+}
+$("#btnCheck").addEventListener("click",async()=>{
+  if(qOn) qStopRec();
+  const text=$("#answer").value.trim(); if(!text){$("#qStatus").textContent="Belum ada jawaban.";return}
+  const b=$("#btnCheck"); b.disabled=true; b.textContent="Mengecek…";
+  try{
+    const ms=await checkGrammar(text); const words=wordCount(text), wpm=qElapsed>5?Math.round(words/(qElapsed/60)):null, fil=fillerCount(text), corr=applyFixes(text,ms);
+    let h='<div class="scores" style="margin-bottom:16px"><div class="stat"><b>'+words+'</b><small>kata</small></div><div class="stat"><b>'+(wpm??"–")+'</b><small>kata/menit</small></div><div class="stat"><b>'+ms.length+'</b><small>koreksi</small></div><div class="stat"><b>'+fil+'</b><small>filler</small></div></div>';
+    h+='<div class="label" style="margin-bottom:6px">Jawabanmu (yang ditandai = perlu dibenahi)</div><div class="marked">'+markText(text,ms)+'</div>';
+    if(ms.length){
+      h+='<ul class="fixlist" style="margin-top:14px">'+ms.map(m=>{const w=text.slice(m.offset,m.offset+m.length);const s=(m.replacements||[]).slice(0,3).map(r=>r.value);return '<li class="'+(isStyle(m)?"style":"")+'"><div class="chg"><del>'+esc(w)+'</del> → <ins>'+(s.length?esc(s.join(" / ")):"(cek manual)")+'</ins></div><p>'+esc(m.message)+'</p></li>'}).join("")+'</ul>';
+      h+='<div class="better" style="margin-top:14px"><div class="label">Versi yang sudah dibenahi</div><p>'+esc(corr)+'</p><button id="btnPlayCorr">Dengarkan versi benar</button></div>';
+    }else h+='<p style="margin-top:12px;color:var(--ok);font-weight:600">Nggak ada kesalahan grammar terdeteksi. Mantap!</p>';
+    $("#qResult").innerHTML=h; const pc=$("#btnPlayCorr"); if(pc) pc.addEventListener("click",()=>speak(corr,{lang:settings.srlang}));
+    saveHistory({kind:"quick",title:qCur,words,errs:ms.length,rules:ms.map(m=>(m.rule&&m.rule.category&&m.rule.category.name)||(m.rule&&m.rule.description)||"other").slice(0,10)});
+  }catch(e){$("#qResult").innerHTML='<p class="alert">Gagal cek grammar: '+esc(e.message)+'</p>'}
+  finally{b.disabled=false;b.textContent="Cek grammar"}
+});
+$("#btnAI").addEventListener("click",async()=>{
+  if(qOn) qStopRec(); readSettings();
+  const text=$("#answer").value.trim(); if(!text) return;
+  const b=$("#btnAI"); b.disabled=true; b.textContent="Mikir…";
+  try{
+    const f=await gemini("You are a friendly English speaking coach for an Indonesian adult (B1) preparing for remote Data Analyst interviews."+(settings.about?" About him: "+settings.about:"")+' Reply ONLY JSON: {"score":1-10,"natural":"more natural version of HIS answer, same meaning","tips":["3 short tips in casual Indonesian"],"phrases":["3 reusable English phrases"]}',
+      [{role:"user",parts:[{text:"Question: "+qCur+"\nHis spoken answer (speech-to-text): "+text}]}],0.6);
+    $("#qAI").innerHTML='<div class="better"><div class="row" style="justify-content:space-between"><span class="label">Feedback AI</span><b style="font-family:var(--f-mono)">Skor '+esc(f.score??"–")+'/10</b></div><div class="label" style="margin-top:12px">Versi lebih natural</div><p>'+esc(f.natural)+'</p><button id="btnPlayNat">Dengarkan</button><div class="label" style="margin-top:14px">Tips</div><ul>'+(f.tips||[]).map(t=>"<li>"+esc(t)+"</li>").join("")+'</ul><div class="label">Frasa</div><ul>'+(f.phrases||[]).map(t=>"<li>"+esc(t)+"</li>").join("")+"</ul></div>";
+    $("#btnPlayNat").addEventListener("click",()=>speak(f.natural,{lang:settings.srlang}));
+  }catch(e){$("#qAI").innerHTML='<p class="alert">Feedback AI gagal: '+esc(e.message)+'</p>'}
+  finally{b.disabled=false;b.textContent="Feedback AI"}
+});
+
+/* ================= HISTORY ================= */
+function saveHistory(entry){entry.t=Date.now();history.unshift(entry);history=history.slice(0,300);store.set("ls.history",history);}
+function renderHistory(){
+  const ul=$("#hist");
+  ul.innerHTML=history.length?history.slice(0,60).map(h=>{const d=new Date(h.t);return '<li><span class="tag '+(h.kind==="quick"?"quick":"")+'">'+(h.kind==="call"?"Call":"Cepat")+'</span><span style="min-width:0">'+esc(h.title.length>60?h.title.slice(0,58)+"…":h.title)+'<br><span class="m">'+d.toLocaleDateString("id-ID",{day:"numeric",month:"short"})+" "+d.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})+(h.dur?" · "+fmt(h.dur):"")+'</span></span><span class="n">'+(h.score!=null?h.score+"/10 · ":"")+h.errs+' err<br><span class="m">'+h.words+' kata</span></span></li>'}).join(""):'<li class="empty">Belum ada sesi. Mulai panggilan pertamamu!</li>';
+  const cnt={};history.forEach(h=>(h.rules||[]).forEach(r=>{cnt[r]=(cnt[r]||0)+1}));
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  $("#freq").innerHTML=top.length?top.map(([r,n])=>'<li><span>'+esc(r)+'</span><b>'+n+'x</b></li>').join(""):'<li class="empty">Muncul setelah beberapa kali latihan.</li>';
+  const calls=history.filter(h=>h.kind==="call"), mins=Math.round(calls.reduce((a,h)=>a+(h.dur||0),0)/60), words=history.reduce((a,h)=>a+(h.words||0),0);
+  const week=history.filter(h=>Date.now()-h.t<7*864e5).length;
+  $("#sumStats").innerHTML='<div class="scores"><div class="stat"><b>'+calls.length+'</b><small>panggilan</small></div><div class="stat"><b>'+mins+'</b><small>menit ngobrol</small></div><div class="stat"><b>'+words+'</b><small>kata diucapkan</small></div><div class="stat"><b>'+week+'</b><small>sesi 7 hari terakhir</small></div></div>';
+}
+$("#btnReset").addEventListener("click",function(){if(this.dataset.c!=="1"){this.dataset.c="1";this.textContent="Yakin? Klik lagi";return}history=[];store.set("ls.history",history);renderHistory();this.dataset.c="";this.textContent="Hapus riwayat";});
+
+/* ================= INIT ================= */
+fillSettings(); updateKeyWarn(); showQ(); renderHistory();
+window.__ls={buildSystem,personaFor,parseJSON,wordCount,fillerCount,applyFixes,get call(){return call}};
+})();
+</script>
+</body>
+</html>
