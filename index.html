@@ -203,7 +203,7 @@ mark.style{background:var(--warn-soft);border-color:var(--warn)}
   <div class="setgrid">
     <div class="field">
       <label for="gkey">API key Gemini</label>
-      <input id="gkey" type="password" autocomplete="off" placeholder="AIza...">
+      <input id="gkey" type="password" autocomplete="off" placeholder="AQ.... (atau AIza...)">
       <small>Disimpan hanya di browser perangkat ini. Wajib untuk mode Panggilan.</small>
     </div>
     <div class="field">
@@ -538,7 +538,7 @@ $$("input[name=persona]").forEach(r=>r.addEventListener("change",()=>{$("#scenar
 function setState(s,chip){
   if(!call) return; call.state=s; $("#stage").dataset.state=s;
   const n=call.p.name;
-  const txt={thinking:n+" lagi mikir…",speaking:n+" lagi ngomong · Spasi = skip",listening:(call.idLang?"Ngomong pakai B. Indonesia":"Giliranmu, ngomong aja")+" · diam "+settings.silence+" dtk = selesai",paused:"Dijeda · tekan P / Lanjut",error:"Ada kendala"}[s]||"";
+  const txt={thinking:n+" lagi mikir…",speaking:n+" lagi ngomong · Spasi = skip",listening:(call.idLang?"Ngomong pakai B. Indonesia":"Giliranmu")+" · diam "+settings.silence+" dtk = selesai",paused:"Dijeda · tekan P / Lanjut",error:"Ada kendala"}[s]||"";
   $("#stateChip").textContent=chip||txt;
 }
 async function startCall(){
@@ -550,7 +550,7 @@ async function startCall(){
   const p=personaFor(kind,scenario);
   call={kind,scenario,level,minutes,accent,p,system:buildSystem(p,level,minutes),contents:[],lines:[],fixes:[],
         startedAt:Date.now(),userWords:0,userSpeakMs:0,state:"idle",paused:false,ending:false,ended:false,idLang:false,silentCount:0,timer:null,rec:null,listen:null};
-  $("#preCall").hidden=true; $("#report").hidden=true; $("#inCall").hidden=false;
+  $("#preCall").hidden=true; $("#report").hidden=true; $("#inCall").hidden=false; $("#inCall").scrollIntoView({block:"start"});
   $("#avatar").textContent=p.name[0]; $("#pName").textContent=p.name; $("#pRole").textContent=p.role;
   $("#callMeta").textContent=minutes+" menit · "+{beginner:"Pemula",intermediate:"Menengah",fluent:"Lancar"}[level];
   $("#subAI").textContent=""; $("#subMe").textContent=""; $("#hintBox").hidden=true; renderTranscript();
